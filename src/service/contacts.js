@@ -1,22 +1,29 @@
 import { ContactsCollection } from "../db/models/contacts.js";
 
-export const getAllContacts = async (page, perPage, sortBy, sortOrder, filter={}) => {
+export const getAllContacts = async (page, perPage, sortBy, sortOrder, filter = {}) => {
     const skip = page > 0 ? (page - 1) * perPage : 0;
 
-    const contactsQuery = ContactsCollection.find();
-
+    // Формуємо об’єкт фільтра
+    const filterQuery = {};
     if (typeof filter.type !== 'undefined') {
-        contactsQuery.where('contactType').equals(filter.type);
+        filterQuery.contactType = filter.type;
     }
-
     if (typeof filter.isFavourite !== 'undefined') {
-        contactsQuery.where('isFavourite').equals(filter.isFavourite);
+        filterQuery.isFavourite = filter.isFavourite;
     }
 
+    // Перетворюємо sortOrder у формат, який розуміє Mongoose (1 або -1)
+    const sortDirection = sortOrder === 'desc' ? -1 : 1;
+
+    // Виконуємо запити паралельно
     const [count, contacts] = await Promise.all([
-        ContactsCollection.find().countDocuments(contactsQuery),
-        contactsQuery.sort({[sortBy]: sortOrder}).skip(skip).limit(perPage)]);
-    
+        ContactsCollection.countDocuments(filterQuery),
+        ContactsCollection.find(filterQuery)
+            .sort({ [sortBy]: sortDirection })
+            .skip(skip)
+            .limit(perPage)
+    ]);
+
     const totalPages = Math.ceil(count / perPage);
 
     return {
@@ -24,11 +31,12 @@ export const getAllContacts = async (page, perPage, sortBy, sortOrder, filter={}
         page,
         perPage,
         totalItems: count,
-        totalPages: totalPages,
+        totalPages,
         hasNextPage: totalPages > page,
         hasPreviousPage: page > 1,
     };
 };
+
 
 export const getContactById = async (contactId) => {
     return ContactsCollection.findById(contactId);
