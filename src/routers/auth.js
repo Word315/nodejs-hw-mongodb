@@ -1,51 +1,62 @@
-import express from 'express';
-
-import { validateBody } from '../middlewares/validateBody.js';
-import {ctrlWrapper } from '../utils/ctrlWrapper.js';
-import { loginUser, registerUser, requestPasswordResetSchema, resetPasswordSchema } from '../validation/auth.js';
+import express from "express";
+import { validateBody } from "../middlewares/validateBody.js";
+import { ctrlWrapper } from "../utils/ctrlWrapper.js";
 import {
-    loginUserController,
-    logoutUserController,
-    refreshUserController,
-    registerUserController,
-    reqestPasswordResetController,
-    resetPasswordController
-} from '../controllers/auth.js';
+  loginUser,
+  registerUser,
+  requestPasswordResetSchema,
+  resetPasswordSchema
+} from "../validation/auth.js";
+
+import {
+  loginUserController,
+  logoutUserController,
+  refreshUserController,
+  registerUserController,
+  requestPasswordResetController, // правильна назва
+  resetPasswordController
+} from "../controllers/auth.js";
 
 const router = express.Router();
 
+// Реєстрація
 router.post(
-    '/register',
-    validateBody(registerUser),
-    ctrlWrapper(registerUserController),
+  "/register",
+  validateBody(registerUser),
+  ctrlWrapper(registerUserController)
 );
 
+// Логін
 router.post(
-    '/login',
-    validateBody(loginUser),
-    ctrlWrapper(loginUserController),
+  "/login",
+  validateBody(loginUser),
+  ctrlWrapper(loginUserController)
 );
 
+// Логаут
 router.post(
-    '/logout',
-    ctrlWrapper(logoutUserController),
+  "/logout",
+  ctrlWrapper(logoutUserController)
 );
 
+// Оновлення токена
 router.post(
-    '/refresh',
-    ctrlWrapper(refreshUserController),
+  "/refresh",
+  ctrlWrapper(refreshUserController)
 );
 
+// Надсилання email для скидання паролю
 router.post(
-    '/send-reset-email',
-    validateBody(requestPasswordResetSchema),
-    ctrlWrapper(reqestPasswordResetController),
+  "/send-reset-email",
+  validateBody(requestPasswordResetSchema),
+  ctrlWrapper(requestPasswordResetController) // правильна назва функції
 );
 
+// Скидання паролю
 router.post(
-    '/reset-pwd',
-    validateBody(resetPasswordSchema),
-    ctrlWrapper(resetPasswordController),
+  "/reset-pwd",
+  validateBody(resetPasswordSchema),
+  ctrlWrapper(resetPasswordController)
 );
 
 export default router;
