@@ -23,6 +23,11 @@ const contactsShema = new Schema(
             required: true,
             default: "personal",
         },
+        userId: { // Додаємо зв’язок з користувачем
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: true,
+        }
     },
     {
         timestamps: true,
