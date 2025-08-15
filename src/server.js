@@ -1,3 +1,4 @@
+import path from "node:path";
 import express from 'express';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
@@ -18,6 +19,8 @@ export const setupServer = () => {
     app.use(express.json());
     app.use(cors());
     app.use(cookieParser());
+
+    app.use("/photos", express.static(path.resolve('src/uploads/photos')));
 
     const logger = (
         pino({
