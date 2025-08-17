@@ -1,13 +1,27 @@
 import { logoutUser, refreshSession, registerUser, requestPasswordReset, resetPassword } from "../service/auth.js";
 import { loginUser } from '../service/auth.js';
+import { User } from '../db/models/user.js';
+import createHttpError from 'http-errors';
 
-export const registerUserController = async (req, res) => {
-    const user = await registerUser(req.body);
-    res.status(201).json({
-        status: 201,
-        message: "Successfully registered a user!",
-        data: user,
-    });
+export const registerUserController = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+
+        // Перевірка на існуючого користувача
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            throw createHttpError(409, 'User already exists');
+        }
+
+        const user = await registerUser(req.body);
+        res.status(201).json({
+            status: 201,
+            message: "Successfully registered a user!",
+            data: user,
+        });
+    } catch (error) {
+        next(error);
+    }
 };
 
 export const loginUserController = async (req, res) => {
