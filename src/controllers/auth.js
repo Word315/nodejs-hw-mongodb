@@ -1,69 +1,84 @@
-import { logoutUser, refreshSession, registerUser } from "../service/auth.js";
-import { loginUser } from '../service/auth.js';
+import { registerUser, loginUser, logoutUser, refreshSession } from "../service/auth.js";
 
+// Реєстрація користувача
 export const registerUserController = async (req, res) => {
     const user = await registerUser(req.body);
 
     res.status(201).json({
         status: 201,
         message: "Successfully registered a user!",
-        data: user,
+        data: user, // без пароля
     });
 };
 
+// Логін користувача
 export const loginUserController = async (req, res) => {
     const session = await loginUser(req.body);
 
+    // Ставимо куки для refreshToken та sessionId
     res.cookie('refreshToken', session.refreshToken, {
         httpOnly: true,
-        expire: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), //30 days
+        secure: process.env.NODE_ENV === 'production', // тільки через https у продакшн
+        sameSite: 'strict',
+        expires: new Date(session.refreshTokenValidUntil),
     });
 
     res.cookie('sessionId', session._id, {
         httpOnly: true,
-        expire: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), //30 days
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        expires: new Date(session.refreshTokenValidUntil),
     });
 
     res.status(200).json({
         status: 200,
-        message: 'Successfully logged in an user!',
+        message: "Successfully logged in an user!",
         data: {
             accessToken: session.accessToken,
         },
     });
 };
 
+// Логаут користувача
 export const logoutUserController = async (req, res) => {
-    if (req.cookies.sessionId) {
-        await logoutUser(req.cookies.sessionId);
+    const { sessionId } = req.cookies;
+
+    if (sessionId) {
+        await logoutUser(sessionId);
     }
 
-    res.clearCookie('sessionId');
     res.clearCookie('refreshToken');
+    res.clearCookie('sessionId');
 
     res.status(204).end();
 };
 
+// Оновлення сесії (рефреш токен)
 export const refreshUserController = async (req, res) => {
     const { sessionId, refreshToken } = req.cookies;
 
-    const session = await refreshSession({sessionId, refreshToken});
+    const session = await refreshSession({ sessionId, refreshToken });
+
+    // Оновлюємо куки
+    res.cookie('refreshToken', session.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        expires: new Date(session.refreshTokenValidUntil),
+    });
 
     res.cookie('sessionId', session._id, {
         httpOnly: true,
-        expire: session.refreshTokenValidUntil,
-    });
-
-    res.cookie('refreshToken', session.refreshToken, {
-        httpOnly: true,
-        expire: session.refreshTokenValidUntil,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        expires: new Date(session.refreshTokenValidUntil),
     });
 
     res.status(200).json({
         status: 200,
-        message: 'Session refreshed successfully',
+        message: "Successfully refreshed a session!",
         data: {
             accessToken: session.accessToken,
-        }
+        },
     });
 };

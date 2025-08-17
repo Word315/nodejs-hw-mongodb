@@ -4,9 +4,10 @@ import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import { validateBody } from '../middlewares/validateBody.js';
 import { createContactShema, updateContactShema } from '../validation/contacts.js';
 import { isValidId } from '../middlewares/isValidId.js';
+import { auth } from '../middlewares/authenticate.js';
 
 const router = express.Router();
-
+router.use(auth);
 router.get('/', ctrlWrapper(getContactsController));
     
 router.get('/:id',

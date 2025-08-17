@@ -1,5 +1,6 @@
-import { model, Schema } from 'mongoose';
 
+import mongoose ,{ model, Schema } from 'mongoose';
+    
 const contactsShema = new Schema(
     {
         name: {
@@ -23,11 +24,11 @@ const contactsShema = new Schema(
             required: true,
             default: "personal",
         },
-        userId: { // Додаємо зв’язок з користувачем
-            type: Schema.Types.ObjectId,
-            ref: 'User',
-            required: true,
-        }
+        userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+}
     },
     {
         timestamps: true,

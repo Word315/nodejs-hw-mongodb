@@ -25,7 +25,7 @@ router.post(
 );
 
 router.post(
-    '/logout',
+    '/logout',      
     ctrlWrapper(logoutUserController),
 );
 
