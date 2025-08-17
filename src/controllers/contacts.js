@@ -56,17 +56,16 @@ export const getContactByIdController = async (req, res, next) => {
 
 export const createContactController = async (req, res, next) => {
     try {
-        // Створення контакту з userId з токена
-        
-const contactData = { ...req.body, userId: new mongoose.Types.ObjectId(req.user.id) };
+        const contactData = {
+            ...req.body,
+            userId: new mongoose.Types.ObjectId(req.user._id) // правильний userId
+        };
 
-
-        const contact = await createContact(contactData);
-
+        const newContact = await createContact(contactData); // передаємо contactData
         res.status(201).json({
             status: 201,
             message: "Successfully created a contact!",
-            data: contact,
+            data: newContact,
         });
     } catch (err) {
         next(err);

@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import 'dotenv/config';
 
 dotenv.config();
 
@@ -11,14 +10,15 @@ export const initMongoConnection = async () => {
         const url = process.env.MONGODB_URL;
         const db = process.env.MONGODB_DB;
 
+        console.log(`Connecting to MongoDB database: ${db}...`);
+
         await mongoose.connect(
             `mongodb+srv://${user}:${pwd}@${url}/${db}?retryWrites=true&w=majority`
         );
 
-        console.log('Mongo connection successfully established!');
-    }
-    catch (err) {
-        console.log('Error while setting up mongo connection', err);
+        console.log('MongoDB connection successfully established!');
+    } catch (err) {
+        console.error('Error while setting up MongoDB connection:', err);
         throw err;
     }
 };
