@@ -1,0 +1,72 @@
+tags:
+  - Auth
+summary: Create user
+operationId: postRegisterUser
+description: Create user
+security:
+  - bearerAuth: []
+
+requestBody:
+  content:
+    multipart/form-data:
+      schema:
+        type: object
+        required:
+          - name
+          - email
+          - password
+        properties:
+          name:
+            type: string
+            description: User name
+            example: Lucas Avolio
+          email:
+            type: string
+            description: User email
+            example: lucas@gmail.com
+          password:
+            type: string
+            description: User password
+
+responses:
+  '201':
+    description: Create user
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+            - message
+            - data
+          properties:
+            status:
+              type: integer
+              example: 201
+            message:
+              type: string
+              example: Successfully registered a user!
+            data:
+              $ref: '../../components/schemas/user.yaml'
+  '400':
+    $ref: '../../components/responses/400.yaml'
+  '401':
+    $ref: '../../components/responses/401.yaml'
+  '409':
+    description: Conflict user email
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+            - message
+          properties:
+            status:
+              type: integer
+              example: 409
+            message:
+              type: string
+              example: Email is already in use
+  '500':
+    $ref: '../../components/responses/500.yaml'

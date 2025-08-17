@@ -1,0 +1,78 @@
+tags:
+  - Contacts
+summary: Replace contact information
+operationId: putReplaceContact
+description: Replace contact information
+security:
+  - bearerAuth: []
+
+parameters:
+  - in: path
+    name: id
+    required: true
+    schema:
+      type: string
+      example: 6883d04e88fbe9de29084882
+requestBody:
+  content:
+    multipart/form-data:
+      schema:
+        type: object
+        required:
+          - name
+          - phoneNumber
+          - email
+          - contactType
+        properties:
+          name:
+            type: string
+            description: Contact name
+            example: Lucas Avolio
+          phoneNumber:
+            type: integer
+            description: Contact phone number
+          email:
+            type: string
+            description: Contact email
+            example: lucas@gmail.com
+          isFavourite:
+            type: boolean
+            description: Contact on favourite
+            example: true
+            default: false
+          contactType:
+            type: string
+            description: Contact phone type
+            enum: ['work', 'home', 'personal']
+            default: personal
+          photo:
+            type: string
+            format: binary
+            description: Contact photo
+            default: null
+responses:
+  '201':
+    description: Successfully created a contact!
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+            - message
+            - data
+          properties:
+            status:
+              type: integer
+              example: 201
+            message:
+              type: string
+              example: Successfully created a contact!
+            data:
+              $ref: '../../../components/schemas/contact.yaml'
+  '401':
+    $ref: '../../../components/responses/401.yaml'
+  '404':
+    $ref: '../../../components/responses/404.yaml'
+  '500':
+    $ref: '../../../components/responses/500.yaml'
