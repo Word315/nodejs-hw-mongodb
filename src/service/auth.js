@@ -97,7 +97,7 @@ export const requestPasswordReset = async (email) => {
     const token = jwt.sign({
         sub: user._id,
         name: user.name,
-    }, getEnvVar('SECRET_JWT'),
+    }, getEnvVar('JWT_SECRET'),
         {
         expiresIn:'5m'
         });
@@ -113,7 +113,7 @@ export const requestPasswordReset = async (email) => {
 
 export const resetPassword = async (token, password) => {
     try {
-        const decoded = jwt.verify(token, getEnvVar('SECRET_JWT'));
+        const decoded = jwt.verify(token, getEnvVar('JWT_SECRET'));
 
         const user = await User.findById(decoded.sub);
 

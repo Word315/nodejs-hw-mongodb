@@ -44,14 +44,18 @@ export const loginUserController = async (req, res) => {
     });
 };
 
-export const logoutUserController = async (req, res) => {
-  if (req.cookies.sessionId) {
-    await logoutUser.deleteOne({ _id: req.cookies.sessionId }); // видаляємо сесію
-  }
+export const logoutUserController = async (req, res, next) => {
+  try {
+    if (req.cookies.sessionId) {
+      await logoutUser(req.cookies.sessionId);
+    }
 
-  res.clearCookie('sessionId');
-  res.clearCookie('refreshToken');
-  res.status(204).end();
+    res.clearCookie("sessionId");
+    res.clearCookie("refreshToken");
+    res.status(204).end();
+  } catch (error) {
+    next(error);
+  }
 };
 
 

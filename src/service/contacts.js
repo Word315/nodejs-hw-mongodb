@@ -1,60 +1,82 @@
 import { ContactsCollection } from "../db/models/contacts.js";
+import mongoose from "mongoose";
 
-export const getAllContacts = async (page, perPage, sortBy, sortOrder, filter={}, userId) => {
-    const skip = page > 0 ? (page - 1) * perPage : 0;
+// Отримати всі контакти з пагінацією, сортуванням та фільтрами
+export const getAllContacts = async (page = 1, perPage = 10, sortBy = "createdAt", sortOrder = "asc", filter = {}, userId) => {
+  const skip = (page - 1) * perPage;
 
-    const contactsQuery = ContactsCollection.find({userId});
+  // Базовий запит по userId
+  const query = { userId: new mongoose.Types.ObjectId(userId) };
 
-    if (typeof filter.type !== 'undefined') {
-        contactsQuery.where('contactType').equals(filter.type);
-    }
+  // Додаємо фільтри, якщо вони є
+  if (filter.contactType) query.contactType = filter.contactType;
+  if (typeof filter.isFavourite !== "undefined") query.isFavourite = filter.isFavourite;
 
-    if (typeof filter.isFavourite !== 'undefined') {
-        contactsQuery.where('isFavourite').equals(filter.isFavourite);
-    }
+  // Загальна кількість контактів
+  const totalItems = await ContactsCollection.countDocuments(query);
 
-    const [count, contacts] = await Promise.all([
-        ContactsCollection.find().countDocuments(contactsQuery),
-        contactsQuery.sort({[sortBy]: sortOrder}).skip(skip).limit(perPage)]);
-    
-    const totalPages = Math.ceil(count / perPage);
+  // Отримання контактів з пагінацією і сортуванням
+  const contacts = await ContactsCollection.find(query)
+    .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
+    .skip(skip)
+    .limit(perPage);
 
-    return {
-        data: contacts,
-        page,
-        perPage,
-        totalItems: count,
-        totalPages: totalPages,
-        hasNextPage: totalPages > page,
-        hasPreviousPage: page > 1,
-    };
+  const totalPages = Math.ceil(totalItems / perPage);
+
+  return {
+    data: contacts,
+    page,
+    perPage,
+    totalItems,
+    totalPages,
+    hasNextPage: page < totalPages,
+    hasPreviousPage: page > 1,
+  };
 };
 
+// Отримати контакт по ID
 export const getContactById = async (contactId, userId) => {
-    return ContactsCollection.findOne({_id: contactId, userId });
+  return ContactsCollection.findOne({
+    _id: contactId,
+    userId: new mongoose.Types.ObjectId(userId),
+  });
 };
 
-export const createContact = async (payload) => {
-    return ContactsCollection.create(payload);
+// Створити контакт (userId підставляється автоматично)
+export const createContact = async (contactData, userId) => {
+  return ContactsCollection.create({
+    ...contactData,
+    userId: new mongoose.Types.ObjectId(userId),
+  });
 };
 
-export const updateContact = async (contactId, payload) => {
-    return ContactsCollection.findOneAndUpdate({_id: contactId}, payload, { new: true });
+// Оновити контакт
+export const updateContact = async (contactId, updateData, userId) => {
+  return ContactsCollection.findOneAndUpdate(
+    { _id: contactId, userId: new mongoose.Types.ObjectId(userId) },
+    updateData,
+    { new: true }
+  );
 };
 
-export const deleteContact = async (contactId) => {
-    return ContactsCollection.findOneAndDelete({_id:contactId});
+// Видалити контакт
+export const deleteContact = async (contactId, userId) => {
+  return ContactsCollection.findOneAndDelete({
+    _id: contactId,
+    userId: new mongoose.Types.ObjectId(userId),
+  });
 };
 
-export const replaceContact = async (contactId, payload) => {
-    const result = await ContactsCollection.findByIdAndUpdate(contactId, payload, {
-        new: true,
-        upsert: true,
-        includeResultMetadata: true
-    });
+// Замінити контакт (replace)
+export const replaceContact = async (contactId, contactData, userId) => {
+  const result = await ContactsCollection.findOneAndUpdate(
+    { _id: contactId, userId: new mongoose.Types.ObjectId(userId) },
+    contactData,
+    { new: true, upsert: true, rawResult: true }
+  );
 
-    return {
-        value: result.value,
-        updateExisting: result.lastErrorObject.updatedExisting,
-    };
+  return {
+    value: result.value,
+    updateExisting: result.lastErrorObject.updatedExisting,
+  };
 };
