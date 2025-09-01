@@ -11,6 +11,10 @@ import { notFoundHandler } from './middlewares/notFoundHandler.js';
 import cookieParser from 'cookie-parser';
 import { auth } from './middlewares/authenticate.js';
 
+// 👉 додаємо
+import swaggerUi from 'swagger-ui-express';
+import fs from 'fs';
+
 const PORT = getEnvVar('PORT') || 5543;
 
 export const setupServer = () => {
@@ -35,8 +39,19 @@ export const setupServer = () => {
     app.use('/auth', authRouter);
     app.use('/contacts', auth, contactsRouter);
 
-    app.use(notFoundHandler);
+    // 👉 Swagger UI (до notFoundHandler!)
+    let swaggerDocument = { openapi: '3.0.0', info: { title: 'Docs not found', version: '0.0.0' } };
+    try {
+        if (fs.existsSync('./docs/swagger.json')) {
+            swaggerDocument = JSON.parse(fs.readFileSync('./docs/swagger.json', 'utf-8'));
+        }
+    } catch (e) {
+        console.error('Failed to load swagger.json:', e);
+    }
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, { explorer: true }));
 
+    // 404 та errors тільки після всіх роутів
+    app.use(notFoundHandler);
     app.use(errorHandler);
 
     app.listen(PORT, (error) => {
