@@ -24,20 +24,32 @@ export const getContactsController = async (req, res, next) => {
   }
 };
 
-// GET /contacts/:id
+
+
 export const getContactByIdController = async (req, res, next) => {
-    const contact = await getContactById(req.params.id, req.user.id);
+  try {
+    const contactId = req.params.id;
+
+    // Залежно від ролі юзера
+    const contact = req.user.role === 'admin'
+      ? await getContactById(contactId)           // адмін бачить будь-який контакт
+      : await getContactById(contactId, req.user._id); // власник бачить свій контакт
 
     if (!contact) {
-        throw createHttpError(404, 'Contact not found');
+      throw createHttpError(404, 'Contact not found');
     }
 
     res.status(200).json({
-        status: 200,
-        message: `Successfully found contact!`,
-        data: contact,
+      status: 200,
+      message: 'Successfully found contact!',
+      data: contact,
     });
+  } catch (error) {
+    next(error);
+  }
 };
+
+
 
 // POST /contacts
 export const createContactController = async (req, res, next) => {
@@ -88,7 +100,15 @@ export const updateContactController = async (req, res, next) => {
 // DELETE /contacts/:id
 export const deleteContactController = async (req, res, next) => {
   try {
-    const deleted = await deleteContact(req.params.id, req.user._id);
+    let deleted;
+
+    if (req.user.role === 'admin') {
+      // Адмін видаляє будь-який контакт
+      deleted = await deleteContact(req.params.id);
+    } else {
+      // Користувач видаляє тільки свій контакт
+      deleted = await deleteContact(req.params.id, req.user._id);
+    }
 
     if (!deleted) throw createHttpError(404, 'Contact not found');
 
@@ -97,6 +117,7 @@ export const deleteContactController = async (req, res, next) => {
     next(error);
   }
 };
+
 
 // PUT /contacts/:id (replace)
 export const replaceContactController = async (req, res, next) => {

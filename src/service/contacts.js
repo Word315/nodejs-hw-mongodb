@@ -36,11 +36,13 @@ export const getAllContacts = async (page = 1, perPage = 10, sortBy = "createdAt
 
 // Отримати контакт по ID
 export const getContactById = async (contactId, userId) => {
-  return ContactsCollection.findOne({
-    _id: contactId,
-    userId: new mongoose.Types.ObjectId(userId),
-  });
+  const query = { _id: contactId };
+  if (userId) {
+    query.userId = new mongoose.Types.ObjectId(userId);
+  }
+  return ContactsCollection.findOne(query);
 };
+
 
 // Створити контакт (userId підставляється автоматично)
 export const createContact = async (contactData, userId) => {
@@ -60,11 +62,12 @@ export const updateContact = async (contactId, updateData, userId) => {
 };
 
 // Видалити контакт
-export const deleteContact = async (contactId, userId) => {
-  return ContactsCollection.findOneAndDelete({
-    _id: contactId,
-    userId: new mongoose.Types.ObjectId(userId),
-  });
+export const deleteContact = async (contactId, userId = null) => {
+  // Якщо userId передано — перевіряємо власника
+  const query = { _id: new mongoose.Types.ObjectId(contactId) };
+  if (userId) query.userId = new mongoose.Types.ObjectId(userId);
+
+  return ContactsCollection.findOneAndDelete(query);
 };
 
 // Замінити контакт (replace)
