@@ -1,85 +1,37 @@
-import { ContactsCollection } from "../db/models/contacts.js";
-import mongoose from "mongoose";
+import { ContactsCollection } from '../db/models/contacts.js';
 
-// Отримати всі контакти з пагінацією, сортуванням та фільтрами
-export const getAllContacts = async (page = 1, perPage = 10, sortBy = "createdAt", sortOrder = "asc", filter = {}, userId) => {
-  const skip = (page - 1) * perPage;
-
-  // Базовий запит по userId
-  const query = { userId: new mongoose.Types.ObjectId(userId) };
-
-  // Додаємо фільтри, якщо вони є
-  if (filter.contactType) query.contactType = filter.contactType;
-  if (typeof filter.isFavourite !== "undefined") query.isFavourite = filter.isFavourite;
-
-  // Загальна кількість контактів
-  const totalItems = await ContactsCollection.countDocuments(query);
-
-  // Отримання контактів з пагінацією і сортуванням
-  const contacts = await ContactsCollection.find(query)
-    .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
-    .skip(skip)
+export const getAllContacts = async (page, perPage, sortBy, sortOrder, filter, userId) => {
+  return ContactsCollection.find({ userId, ...filter })
+    .sort({ [sortBy]: sortOrder })
+    .skip((page - 1) * perPage)
     .limit(perPage);
-
-  const totalPages = Math.ceil(totalItems / perPage);
-
-  return {
-    data: contacts,
-    page,
-    perPage,
-    totalItems,
-    totalPages,
-    hasNextPage: page < totalPages,
-    hasPreviousPage: page > 1,
-  };
 };
 
-// Отримати контакт по ID
 export const getContactById = async (contactId, userId) => {
-  const query = { _id: contactId };
-  if (userId) {
-    query.userId = new mongoose.Types.ObjectId(userId);
-  }
-  return ContactsCollection.findOne(query);
+  return ContactsCollection.findOne({ _id: contactId, userId });
 };
 
-
-// Створити контакт (userId підставляється автоматично)
-export const createContact = async (contactData, userId) => {
-  return ContactsCollection.create({
-    ...contactData,
-    userId: new mongoose.Types.ObjectId(userId),
-  });
+export const createContact = async (contactData) => {
+  const newContact = await ContactsCollection.create(contactData);
+  return newContact;
 };
 
-// Оновити контакт
-export const updateContact = async (contactId, updateData, userId) => {
+export const updateContact = async (contactId, data, userId) => {
   return ContactsCollection.findOneAndUpdate(
-    { _id: contactId, userId: new mongoose.Types.ObjectId(userId) },
-    updateData,
+    { _id: contactId, userId },
+    data,
     { new: true }
   );
 };
 
-// Видалити контакт
-export const deleteContact = async (contactId, userId = null) => {
-  // Якщо userId передано — перевіряємо власника
-  const query = { _id: new mongoose.Types.ObjectId(contactId) };
-  if (userId) query.userId = new mongoose.Types.ObjectId(userId);
-
-  return ContactsCollection.findOneAndDelete(query);
+export const deleteContact = async (contactId, userId) => {
+  return ContactsCollection.findOneAndDelete({ _id: contactId, userId });
 };
 
-// Замінити контакт (replace)
-export const replaceContact = async (contactId, contactData, userId) => {
-  const result = await ContactsCollection.findOneAndUpdate(
-    { _id: contactId, userId: new mongoose.Types.ObjectId(userId) },
-    contactData,
-    { new: true, upsert: true, rawResult: true }
+export const replaceContact = async (contactId, data, userId) => {
+  return ContactsCollection.findOneAndUpdate(
+    { _id: contactId, userId },
+    data,
+    { new: true, upsert: true }
   );
-
-  return {
-    value: result.value,
-    updateExisting: result.lastErrorObject.updatedExisting,
-  };
 };
