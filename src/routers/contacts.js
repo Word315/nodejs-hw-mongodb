@@ -1,27 +1,53 @@
 import express from 'express';
+import {
+  createContactController,
+  deleteContactController,
+  getContactByIdController,
+  getContactsController,
+  replaceContactController,
+  updateContactController,
+} from '../controllers/contacts.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import { validateBody } from '../middlewares/validateBody.js';
-import { isValidId } from '../middlewares/isValidId.js';
-import { auth } from '../middlewares/authenticate.js';
 import { createContactShema, updateContactShema } from '../validation/contacts.js';
-import { 
-  createContactController, 
-  deleteContactController, 
-  getContactByIdController, 
-  getContactsController, 
-  replaceContactController, 
-  updateContactController 
-} from '../controllers/contacts.js';
+import { isValidId } from '../middlewares/isValidId.js';
+import { upload } from '../middlewares/upload.js';
+import { auth } from '../middlewares/authenticate.js'; // ✅ правильний імпорт
 
 const router = express.Router();
 
+// ✅ всі маршрути тепер захищені авторизацією
 router.use(auth);
 
 router.get('/', ctrlWrapper(getContactsController));
-router.get('/:id', isValidId, ctrlWrapper(getContactByIdController));
-router.post('/', validateBody(createContactShema), ctrlWrapper(createContactController));
-router.patch('/:id', isValidId, validateBody(updateContactShema), ctrlWrapper(updateContactController));
-router.delete('/:id', isValidId, ctrlWrapper(deleteContactController));
-router.put('/:id', isValidId, validateBody(createContactShema), ctrlWrapper(replaceContactController));
+
+router.get('/:id',
+  isValidId,
+  ctrlWrapper(getContactByIdController)
+);
+
+router.post('/',
+  upload.single('photo'),
+  validateBody(createContactShema),
+  ctrlWrapper(createContactController)
+);
+
+router.patch('/:id',
+  isValidId,
+  upload.single('photo'),
+  validateBody(updateContactShema),
+  ctrlWrapper(updateContactController)
+);
+
+router.delete('/:id',
+  isValidId,
+  ctrlWrapper(deleteContactController)
+);
+
+router.put('/:id',
+  isValidId,
+  validateBody(createContactShema),
+  ctrlWrapper(replaceContactController)
+);
 
 export default router;
