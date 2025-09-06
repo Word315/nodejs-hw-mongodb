@@ -1,11 +1,23 @@
 import { ContactsCollection } from '../db/models/contacts.js';
 
 export const getAllContacts = async (page, perPage, sortBy, sortOrder, filter, userId) => {
-  return ContactsCollection.find({ userId, ...filter })
+  let query = { userId };
+
+  // далі додаємо фільтрацію
+  if (typeof filter.type !== "undefined") {
+    query.contactType = filter.type;
+  }
+
+  if (typeof filter.isFavourite !== "undefined") {
+    query.isFavourite = filter.isFavourite;
+  }
+
+  return ContactsCollection.find(query)
     .sort({ [sortBy]: sortOrder })
     .skip((page - 1) * perPage)
     .limit(perPage);
 };
+
 
 export const getContactById = async (contactId, userId) => {
   return ContactsCollection.findOne({ _id: contactId, userId });
