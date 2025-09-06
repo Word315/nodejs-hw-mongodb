@@ -1,8 +1,10 @@
 import createHttpError from 'http-errors';
+import mongoose from 'mongoose';
 import { createContact, deleteContact, getAllContacts, getContactById, replaceContact, updateContact } from '../service/contacts.js';
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
 import { parseFilterParams } from '../utils/parseFilterParams.js';
+import { uploadToCloudinary } from '../utils/uploadToCloudinary.js'; //
 
 export const getContactsController = async (req, res, next) => {
   try {
@@ -42,12 +44,23 @@ export const getContactByIdController = async (req, res, next) => {
 
 export const createContactController = async (req, res, next) => {
   try {
-    const contactData = { ...req.body, userId: req.user._id };
+    let photoUrl = null;
+
+    if (req.file) {
+      const uploadResult = await uploadToCloudinary(req.file.path);
+      photoUrl = uploadResult.secure_url;
+    }
+
+    const contactData = {
+      ...req.body,
+      userId: new mongoose.Types.ObjectId(req.user._id),
+      photo: photoUrl, // ✅ додаємо фото, якщо воно є
+    };
 
     const newContact = await createContact(contactData);
     res.status(201).json({
       status: 201,
-      message: "Successfully created a contact!",
+      message: 'Successfully created a contact!',
       data: newContact,
     });
   } catch (err) {
@@ -57,7 +70,18 @@ export const createContactController = async (req, res, next) => {
 
 export const updateContactController = async (req, res, next) => {
   try {
-    const result = await updateContact(req.params.id, req.body, req.user._id);
+    let updatedData = { ...req.body };
+
+    if (req.file) {
+      const uploadResult = await uploadToCloudinary(req.file.path);
+      updatedData.photo = uploadResult.secure_url; // ✅ оновлюємо фото
+    }
+
+    const result = await updateContact(
+      req.params.id,
+      updatedData,
+      req.user._id
+    );
 
     if (!result) {
       throw createHttpError(404, 'Contact not found');
@@ -65,7 +89,7 @@ export const updateContactController = async (req, res, next) => {
 
     res.status(200).json({
       status: 200,
-      message: "Successfully patched a contact!",
+      message: 'Successfully patched a contact!',
       data: result,
     });
   } catch (err) {
