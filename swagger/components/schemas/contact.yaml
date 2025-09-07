@@ -1,0 +1,55 @@
+type: object
+required:
+  - _id
+  - name
+  - phoneNumber
+  - email
+  - isFavourite
+  - contactType
+  - userId
+  - createdAt
+  - updatedAt
+properties:
+  _id:
+    type: string
+    description: Contact id
+    example: 6883d32f693bb7b3bbb08c58
+  name:
+    type: string
+    description: Contact name
+    example: Lucas Avolio
+  phoneNumber:
+    type: integer
+    description: Contact phone number
+    example: '+380974378942'
+  email:
+    type: string
+    description: Contact email
+    example: lucas@gmail.com
+  isFavourite:
+    type: boolean
+    description: Contact on isFavourite
+    example: false
+    default: false
+  contactType:
+    type: string
+    description: Contact phone type
+    enum: ['work', 'home', 'personal']
+    default: personal
+  userId:
+    type: string
+    description: Contact owner id
+    example: 6883d32f693bb7b3bbb08c58
+  photo:
+    type: string
+    format: binary
+    description: Contact photo
+    default: null
+  createdAt:
+    type: string
+    format: date-time
+    example: 2025-07-21T17:27:59.621+00:00
+  updatedAt:
+    type: string
+    format: date-time
+    example: 2025-07-21T17:27:59.621+00:00

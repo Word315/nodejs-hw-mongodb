@@ -1,0 +1,32 @@
+type: object
+required:
+  - _id
+  - name
+  - email
+  - password
+  - createdAt
+  - updatedAt
+properties:
+  _id:
+    type: string
+    description: Unique identifier for the user
+    example: 60d21b4667d0d8992e610c85
+  name:
+    type: string
+    description: User name
+    example: Jhon Doe
+  email:
+    type: string
+    description: User email
+    example: john@gmail.com
+  password:
+    type: string
+    example: $2b$10$dG67jbLm5ktOx.ASxvGcnuOf/Zm4Hq95W8Lnj/zNzqf.yFUfEUEE2
+  createdAt:
+    type: string
+    format: date-time
+    example: 2025-07-21T17:27:59.621+00:00
+  updatedAt:
+    type: string
+    format: date-time
+    example: 2025-07-21T17:27:59.621+00:00

@@ -11,7 +11,7 @@ import { notFoundHandler } from './middlewares/notFoundHandler.js';
 import cookieParser from 'cookie-parser';
 import { auth } from './middlewares/authenticate.js';
 
-const PORT = getEnvVar('PORT') || 5543;
+const PORT = getEnvVar('PORT') || 3000;
 
 export const setupServer = () => {
     const app = express();
