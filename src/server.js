@@ -11,6 +11,9 @@ import { notFoundHandler } from './middlewares/notFoundHandler.js';
 import cookieParser from 'cookie-parser';
 import { auth } from './middlewares/authenticate.js';
 
+import swaggerUi from 'swagger-ui-express';
+import fs from 'fs';
+
 const PORT = getEnvVar('PORT') || 3000;
 
 export const setupServer = () => {
@@ -22,28 +25,30 @@ export const setupServer = () => {
 
     app.use("/photos", express.static(path.resolve('src/uploads/photos')));
 
-    const logger = (
-        pino({
-            transport: {
-                target: 'pino-pretty',
-            }
-        })
-    );
+    const logger = pino({
+        transport: {
+            target: 'pino-pretty',
+        }
+    });
 
     app.use(pinoHttp({ logger }));
 
+    // Swagger UI з готового swagger.json
+    const swaggerDocument = JSON.parse(fs.readFileSync(path.resolve('docs/swagger.json')));
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+    // Routes
     app.use('/auth', authRouter);
     app.use('/contacts', auth, contactsRouter);
 
     app.use(notFoundHandler);
-
     app.use(errorHandler);
 
     app.listen(PORT, (error) => {
         if (error) {
             throw error;
         }
-
-        logger.info(`Server started on port ${PORT}`);
+        logger.info(`🚀 Server started on port ${PORT}`);
+        logger.info(`📚 Docs available at http://localhost:${PORT}/api-docs`);
     });
 };

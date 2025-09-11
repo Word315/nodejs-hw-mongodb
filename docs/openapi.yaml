@@ -1,38 +1,35 @@
 openapi: 3.1.0
 info:
   version: 1.0.0
-  title: Phonebook
+  title: Contacts API
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  description: This is a documentation of phonebook for personal or corporate use
+  description: API для роботи з контактами (HW7)
 tags:
   - name: Contacts
-    description: Operations with contacts
+    description: Операції з контактами
   - name: Auth
-    description: Operation with user
+    description: Реєстрація та логін
 servers:
-  - url: http://127.0.0.1:3000
-  - url: https://nodejs-hw7-swagger-p0s5.onrender.com
+  - url: http://localhost:3000
+  - url: https://nodejs-hw-mongodb-7-u6lx.onrender.com
 paths:
   /contacts:
-    get:
-      $ref: '../swagger/paths/get.yaml'
+    $ref: '../swagger/paths/get.yaml'
     post:
       $ref: '../swagger/paths/contacts/post.yaml'
   /contacts/{id}:
     get:
       $ref: '../swagger/paths/contacts/{id}/get.yaml'
-    put:
-      $ref: '../swagger/paths/contacts/{id}/put.yaml'
     patch:
       $ref: '../swagger/paths/contacts/{id}/patch.yaml'
     delete:
       $ref: '../swagger/paths/contacts/{id}/delete.yaml'
-  /register:
-    post:
-      $ref: '../swagger/paths/auth/post.yaml'
-
+    put:
+      $ref: '../swagger/paths/contacts/{id}/put.yaml'
+  /auth/register:
+    $ref: '../swagger/paths/auth/post.yaml'
 components:
   securitySchemes:
     bearerAuth:

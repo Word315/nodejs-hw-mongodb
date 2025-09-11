@@ -11,10 +11,22 @@
         padding: 0;
       }
     </style>
-    {{{redocHead}}}
+    <!-- Підключаємо Redoc -->
+    <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
   </head>
-
   <body>
-    {{{redocHTML}}}
+    <!-- Тут вказуємо шлях до openapi.yaml і задаємо тему -->
+    <redoc
+      spec-url="openapi.yaml"
+      theme='{
+           "colors": {
+             "primary": {"main": "#32329f"}
+           },
+           "generateCodeSamples": {
+             "languages": ["curl", "Node.js", "JavaScript"]
+           }
+         }'
+    >
+    </redoc>
   </body>
 </html>
