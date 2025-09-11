@@ -16,7 +16,8 @@ servers:
   - url: https://nodejs-hw-mongodb-7-u6lx.onrender.com
 paths:
   /contacts:
-    $ref: '../swagger/paths/get.yaml'
+    get:
+      $ref: '../swagger/paths/contacts/get.yaml'
     post:
       $ref: '../swagger/paths/contacts/post.yaml'
   /contacts/{id}:

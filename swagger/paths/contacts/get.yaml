@@ -1,0 +1,56 @@
+  tags:
+    - Contacts
+  summary: Отримати всі контакти
+  description: Повертає список контактів користувача з можливістю пагінації та фільтрації.
+  parameters:
+    - name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        example: 1
+    - name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        example: 10
+    - name: sortBy
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [name, email, phone]
+        example: name
+    - name: sortOrder
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [asc, desc]
+        example: asc
+  responses:
+    '200':
+      description: Успішна відповідь
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              total:
+                type: integer
+                example: 100
+              page:
+                type: integer
+                example: 1
+              limit:
+                type: integer
+                example: 10
+              contacts:
+                type: array
+                items:
+                  $ref: '../../components/schemas/contact.yaml'
+    '401':
+      $ref: '../../components/responses/401.yaml'
+    '500':
+      $ref: '../../components/responses/500.yaml'
